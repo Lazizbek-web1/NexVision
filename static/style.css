@@ -72,9 +72,6 @@ code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: 
 
 figcaption { font-size: 0.8rem; font-weight: 500; color: #333; margin-top: 8px; }
 
-/* live demo */
-.drop.over { background: #CCFF00; }
-
 /* pipeline diagram */
 .pipeline .svg-scroll { overflow-x: auto; }
 .pipeline svg { width: 100%; min-width: 760px; height: auto; }

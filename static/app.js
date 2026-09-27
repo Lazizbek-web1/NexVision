@@ -1,15 +1,12 @@
 "use strict";
 
-const REPO = "https://github.com/alcoder06/wiut-cv-hackathon";
-// Where the demo API lives: empty = same server as the page; a static host sets the Modal URL
-// in <meta name="demo-api"> (scripts/deploy_space.py --api).
-const API = (document.querySelector('meta[name="demo-api"]')?.content || "").replace(/\/$/, "");
+const REPO = "https://github.com/Lazizbek-web1/NexVision";
 const CLASSES = ["accident", "near_miss", "red_light", "wrong_way", "illegal_u_turn", "stopped_vehicle", "jaywalking",
   "failure_to_yield", "illegal_turn", "solid_line_crossing", "stop_line", "congestion", "road_obstacle", "fire_smoke"];
 const GROUPS = [["car", "Cars"], ["person", "People"], ["heavy", "Buses and trucks"], ["two_wheeler", "Bikes"]];
 const PAGES = [
   ["home", "Home", "fa-house"], ["team", "Team", "fa-users"], ["approach", "Pipeline", "fa-diagram-project"],
-  ["eda", "EDA", "fa-chart-pie"], ["results", "Results", "fa-bolt"], ["demo", "Live demo", "fa-play"],
+  ["eda", "EDA", "fa-chart-pie"], ["results", "Results", "fa-bolt"],
   ["report", "Report", "fa-file-lines"], ["links", "Links", "fa-link"],
 ];
 // Chart ink follows the page: black axes, mono type, blue marks, coral for alarms.
@@ -25,10 +22,9 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 
 // ---------------------------------------------------------------- navigation
 function navButton(id, label, icon, mobile) {
-  const accent = id === "demo" ? "bg-brutCoral" : "bg-white";
   return mobile
-    ? `<button type="button" data-target="${id}" class="nav-btn p-2 font-mono text-xs font-bold ${accent} brut-border text-center">${label}</button>`
-    : `<button type="button" data-target="${id}" class="nav-btn px-3 py-1.5 font-mono text-xs font-bold ${accent} brut-border brut-btn"><i class="fa-solid ${icon} mr-1"></i> ${label}</button>`;
+    ? `<button type="button" data-target="${id}" class="nav-btn p-2 font-mono text-xs font-bold bg-white brut-border text-center">${label}</button>`
+    : `<button type="button" data-target="${id}" class="nav-btn px-3 py-1.5 font-mono text-xs font-bold bg-white brut-border brut-btn"><i class="fa-solid ${icon} mr-1"></i> ${label}</button>`;
 }
 
 function initNav() {
@@ -60,7 +56,7 @@ function switchTab(id, updateHash = true) {
   document.querySelectorAll(".nav-btn").forEach((b) => {
     const on = b.dataset.target === id;
     b.classList.toggle("bg-brutLime", on);
-    b.classList.toggle("bg-white", !on && b.dataset.target !== "demo");
+    b.classList.toggle("bg-white", !on);
     b.setAttribute("aria-current", on ? "page" : "false");
   });
   if (updateHash && location.hash !== `#${id}`) history.replaceState(null, "", `#${id}`);
@@ -310,131 +306,6 @@ function dashboardCharts(cls, counts, hours, mins, perMin) {
   baseLayout({ xaxis: { dtick: 1, title: { text: "minute", font: { family: MONO, size: 10 } } }, margin: { l: 46, r: 14, t: 8, b: 46 } }), PLOT_CFG);
 }
 
-// ---------------------------------------------------------------- live demo
-let limits = { max_mb: 200, max_sec: 120 };
-let demoResult = null;
-let lastStage = "";
-
-function log(msg) {
-  const term = $("#terminal-logs");
-  const line = document.createElement("div");
-  line.textContent = msg;
-  term.appendChild(line);
-  term.scrollTop = term.scrollHeight;
-}
-
-function serverStatus(ok) {
-  $("#server-dot").className = `w-3 h-3 rounded-full ${ok ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`;
-  $("#server-text").textContent = ok ? "DEMO: ONLINE" : "DEMO: OFFLINE";
-}
-
-async function initDemo() {
-  try {
-    limits = await (await fetch(`${API}/api/limits`)).json();
-    document.querySelectorAll(".lim-sec").forEach((e) => { e.textContent = limits.max_sec; });
-    document.querySelectorAll(".lim-mb").forEach((e) => { e.textContent = limits.max_mb; });
-    serverStatus(true);
-  } catch {
-    serverStatus(false);
-    showDemoError("The demo server is not reachable from this copy of the site.");
-  }
-  const drop = $("#drop"), input = $("#file");
-  input.addEventListener("change", () => input.files[0] && upload(input.files[0]));
-  ["dragenter", "dragover"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add("over"); }));
-  ["dragleave", "drop"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
-  drop.addEventListener("drop", (e) => e.dataTransfer.files[0] && upload(e.dataTransfer.files[0]));
-  $("#demo-json").addEventListener("click", () => {
-    if (!demoResult) return;
-    const blob = new Blob([JSON.stringify({ events: demoResult.events, risk: demoResult.risk }, null, 1)], { type: "application/json" });
-    const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: demoResult.video.name.replace(/\.[^.]+$/, "") + "_events.json" });
-    a.click();
-    URL.revokeObjectURL(a.href);
-  });
-}
-
-function showDemoError(msg) {
-  const el = $("#job-error");
-  el.textContent = msg;
-  el.classList.remove("hidden");
-}
-
-function setJob(frac, text) {
-  $("#job").classList.remove("hidden");
-  $("#job-bar").style.width = `${Math.round(frac * 100)}%`;
-  $("#job-status").textContent = text;
-}
-
-function upload(file) {
-  $("#job-error").classList.add("hidden");
-  $("#demo-result").classList.add("hidden");
-  if (file.size > limits.max_mb * 1048576) { showDemoError(`That file is ${(file.size / 1048576).toFixed(0)} MB; the limit is ${limits.max_mb} MB.`); return; }
-  $("#drop").classList.add("hidden");
-  lastStage = "";
-  log(`[upload] ${file.name}, ${(file.size / 1048576).toFixed(1)} MB`);
-  const form = new FormData();
-  form.append("file", file);
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", `${API}/api/jobs`);
-  xhr.upload.onprogress = (e) => e.lengthComputable && setJob(0.1 * e.loaded / e.total, `Uploading ${file.name}: ${Math.round(100 * e.loaded / e.total)}%`);
-  xhr.onload = () => {
-    let body = {};
-    try { body = JSON.parse(xhr.responseText); } catch { /* keep {} */ }
-    if (xhr.status !== 200) { failJob(body.detail || `Upload failed (HTTP ${xhr.status}).`); return; }
-    log(`[server] accepted, job ${body.id}`);
-    poll(body.id);
-  };
-  xhr.onerror = () => failJob("Upload failed: the connection dropped.");
-  xhr.send(form);
-}
-
-function failJob(msg) {
-  log(`[error] ${msg}`);
-  showDemoError(msg);
-  $("#job").classList.add("hidden");
-  $("#drop").classList.remove("hidden");
-  $("#file").value = "";
-}
-
-async function poll(id) {
-  let job;
-  try { job = await (await fetch(`${API}/api/jobs/${id}`)).json(); } catch { setTimeout(() => poll(id), 3000); return; }
-  if (job.state === "error" || job.detail) { failJob(job.error || job.detail); return; }
-  if (job.stage !== lastStage && job.state !== "done") { log(`[${job.state}] ${job.stage}`); lastStage = job.stage; }
-  if (job.state === "done") {
-    setJob(1, `Done in ${Math.round(job.elapsed_sec)} s.`);
-    log(`[done] ${job.result.events.length} events, ${job.result.tracks} tracks, ${Math.round(job.result.timing.total_sec)} s`);
-    showDemo(job.result);
-    return;
-  }
-  const eta = job.eta_sec != null ? ` · about ${job.eta_sec < 60 ? job.eta_sec + " s" : Math.ceil(job.eta_sec / 60) + " min"} left` : "";
-  const text = job.state === "queued"
-    ? (job.queue_position ? `Waiting: ${job.queue_position} video${job.queue_position > 1 ? "s" : ""} ahead of yours` : "Starting…")
-    : `${job.stage} · ${Math.round(job.progress * 100)}%${eta}`;
-  setJob(0.1 + 0.9 * job.progress, text);
-  setTimeout(() => poll(id), 1500);
-}
-
-function showDemo(r) {
-  demoResult = r;
-  const v = r.video, video = $("#demo-video"), seek = seeker(video);
-  $("#demo-result").classList.remove("hidden");
-  $("#demo-title").textContent = v.name;
-  $("#demo-sub").textContent = `${v.width}×${v.height} · ${fmt(v.duration)} · ${r.tracks} tracks`;
-  video.src = API + r.annotated_url;
-  eventsTable($("#demo-table"), r.events, seek);
-  const alarms = [];
-  let prev = -1e9;
-  r.risk.forEach(([t, s]) => { if (s >= 0.5) { if (t - prev >= 2) alarms.push(t); prev = t; } });
-  timeline($("#demo-timeline"), r.events, v.duration, seek);
-  riskChart($("#demo-risk"), r.risk, v.duration, alarms, seek);
-  legend($("#demo-legend"));
-  stackedObjects($("#demo-objects"), r.objects, v.duration);
-  syncPlayhead(video, [$("#demo-timeline"), $("#demo-risk"), $("#demo-objects")]);
-  $("#drop").classList.remove("hidden");
-  $("#file").value = "";
-  $("#demo-result").scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
 // ---------------------------------------------------------------- team, links
 const LINK_ICONS = { GitHub: "fa-brands fa-github", LinkedIn: "fa-brands fa-linkedin-in", Portfolio: "fa-solid fa-globe" };
 const AVATAR = ["bg-brutLime", "bg-brutCoral text-white", "bg-brutBlue text-white"];
@@ -465,11 +336,9 @@ function boxKey() {
 window.addEventListener("DOMContentLoaded", () => {
   $("#link-repo").href = REPO;
   $("#link-repo-label").textContent = REPO.replace("https://", "");
-  $("#link-weights").href = `${REPO}/tree/main/weights`;
   initNav();
   boxKey();
   initTeam();
-  initDemo();
   const start = () => (window.Plotly ? loadData() : setTimeout(start, 50));
   start();
 });

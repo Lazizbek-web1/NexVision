@@ -22,7 +22,7 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 
 // ---------------------------------------------------------------- navigation
 function navButton(id, label, icon, mobile) {
-  const accent = id === "demo" ? "bg-brutCoral" : "bg-white";
+  const accent = id === "results" ? "bg-brutCoral" : "bg-white";
   return mobile
     ? `<button type="button" data-target="${id}" class="nav-btn p-2 font-mono text-xs font-bold ${accent} brut-border text-center">${label}</button>`
     : `<button type="button" data-target="${id}" class="nav-btn px-3 py-1.5 font-mono text-xs font-bold ${accent} brut-border brut-btn"><i class="fa-solid ${icon} mr-1"></i> ${label}</button>`;
@@ -57,7 +57,7 @@ function switchTab(id, updateHash = true) {
   document.querySelectorAll(".nav-btn").forEach((b) => {
     const on = b.dataset.target === id;
     b.classList.toggle("bg-brutLime", on);
-    b.classList.toggle("bg-white", !on && b.dataset.target !== "demo");
+    b.classList.toggle("bg-white", !on && b.dataset.target !== "results");
     b.setAttribute("aria-current", on ? "page" : "false");
   });
   if (updateHash && location.hash !== `#${id}`) history.replaceState(null, "", `#${id}`);

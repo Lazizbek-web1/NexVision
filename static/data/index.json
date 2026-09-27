@@ -1,0 +1,75 @@
+{
+ "videos": [
+  {
+   "name": "C3896.MP4",
+   "stem": "C3896",
+   "duration": 340.34,
+   "resolution": "3840x2160",
+   "fps": 29.97,
+   "events": 48,
+   "event_counts": {
+    "jaywalking": 18,
+    "congestion": 5,
+    "failure_to_yield": 16,
+    "stopped_vehicle": 4,
+    "near_miss": 3,
+    "red_light": 1,
+    "stop_line": 1
+   },
+   "alarms": 3,
+   "from_predictions": true
+  },
+  {
+   "name": "C3897.MP4",
+   "stem": "C3897",
+   "duration": 317.82,
+   "resolution": "3840x2160",
+   "fps": 29.97,
+   "events": 70,
+   "event_counts": {
+    "stopped_vehicle": 9,
+    "jaywalking": 25,
+    "congestion": 5,
+    "failure_to_yield": 21,
+    "near_miss": 8,
+    "solid_line_crossing": 2
+   },
+   "alarms": 7,
+   "from_predictions": true
+  },
+  {
+   "name": "C3905.MP4",
+   "stem": "C3905",
+   "duration": 127.63,
+   "resolution": "3840x2160",
+   "fps": 29.97,
+   "events": 22,
+   "event_counts": {
+    "jaywalking": 6,
+    "stopped_vehicle": 3,
+    "failure_to_yield": 9,
+    "near_miss": 2,
+    "congestion": 1,
+    "stop_line": 1
+   },
+   "alarms": 3,
+   "from_predictions": true
+  },
+  {
+   "name": "0924.mp4",
+   "stem": "0924",
+   "duration": 38.43,
+   "resolution": "1920x1080",
+   "fps": 30.0,
+   "events": 4,
+   "event_counts": {
+    "stopped_vehicle": 1,
+    "near_miss": 1,
+    "congestion": 1,
+    "failure_to_yield": 1
+   },
+   "alarms": 1,
+   "from_predictions": true
+  }
+ ]
+}

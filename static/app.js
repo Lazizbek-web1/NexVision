@@ -6,7 +6,7 @@ const CLASSES = ["accident", "near_miss", "red_light", "wrong_way", "illegal_u_t
 const GROUPS = [["car", "Cars"], ["person", "People"], ["heavy", "Buses and trucks"], ["two_wheeler", "Bikes"]];
 const PAGES = [
   ["home", "Home", "fa-house"], ["team", "Team", "fa-users"], ["approach", "Pipeline", "fa-diagram-project"],
-  ["eda", "EDA", "fa-chart-pie"], ["results", "Results", "fa-bolt"],
+  ["eda", "EDA", "fa-chart-pie"], ["results", "Results", "fa-bolt"], ["demo", "Live demo", "fa-play"],
   ["report", "Report", "fa-file-lines"], ["links", "Links", "fa-link"],
 ];
 // Chart ink follows the page: black axes, mono type, blue marks, coral for alarms.
@@ -22,9 +22,10 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 
 // ---------------------------------------------------------------- navigation
 function navButton(id, label, icon, mobile) {
+  const accent = id === "demo" ? "bg-brutCoral" : "bg-white";
   return mobile
-    ? `<button type="button" data-target="${id}" class="nav-btn p-2 font-mono text-xs font-bold bg-white brut-border text-center">${label}</button>`
-    : `<button type="button" data-target="${id}" class="nav-btn px-3 py-1.5 font-mono text-xs font-bold bg-white brut-border brut-btn"><i class="fa-solid ${icon} mr-1"></i> ${label}</button>`;
+    ? `<button type="button" data-target="${id}" class="nav-btn p-2 font-mono text-xs font-bold ${accent} brut-border text-center">${label}</button>`
+    : `<button type="button" data-target="${id}" class="nav-btn px-3 py-1.5 font-mono text-xs font-bold ${accent} brut-border brut-btn"><i class="fa-solid ${icon} mr-1"></i> ${label}</button>`;
 }
 
 function initNav() {
@@ -56,7 +57,7 @@ function switchTab(id, updateHash = true) {
   document.querySelectorAll(".nav-btn").forEach((b) => {
     const on = b.dataset.target === id;
     b.classList.toggle("bg-brutLime", on);
-    b.classList.toggle("bg-white", !on);
+    b.classList.toggle("bg-white", !on && b.dataset.target !== "demo");
     b.setAttribute("aria-current", on ? "page" : "false");
   });
   if (updateHash && location.hash !== `#${id}`) history.replaceState(null, "", `#${id}`);

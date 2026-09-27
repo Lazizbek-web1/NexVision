@@ -32,6 +32,10 @@
       </button>
     </div>
     <nav id="nav-tabs" class="hidden md:flex flex-wrap items-center justify-center gap-2" aria-label="Sections"></nav>
+    <div class="hidden lg:flex items-center gap-2" title="Static preview; live processing is unavailable">
+      <span class="w-3 h-3 bg-gray-400 rounded-full"></span>
+      <span class="font-mono text-xs font-bold">STATIC PREVIEW</span>
+    </div>
   </div>
   <div id="mobile-menu" class="hidden md:hidden pt-3 border-t-2 border-black mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
 </header>
@@ -54,8 +58,8 @@
         only past frames, scores how likely a crash is in the next 5 seconds.
       </p>
       <div class="flex flex-wrap gap-4 pt-2">
-        <button type="button" onclick="switchTab('eda')" class="px-6 py-3.5 bg-brutCoral text-white font-mono font-black text-sm uppercase brut-border brut-btn flex items-center gap-3">
-          <i class="fa-solid fa-chart-pie"></i> Explore the data
+        <button type="button" onclick="switchTab('demo')" class="px-6 py-3.5 bg-brutCoral text-white font-mono font-black text-sm uppercase brut-border brut-btn flex items-center gap-3">
+          <i class="fa-solid fa-upload"></i> Try it on your video
         </button>
         <button type="button" onclick="switchTab('results')" class="px-6 py-3.5 bg-brutYellow text-black font-mono font-black text-sm uppercase brut-border brut-btn flex items-center gap-3">
           <i class="fa-solid fa-film"></i> See the sample results
@@ -388,6 +392,40 @@
       <div class="p-3 bg-brutCoral/30 brut-border-2"><div class="font-mono font-black uppercase text-xs mb-1">Missed a real crash</div>No sample video contains a crash. On a public roadside crash clip (TU-DAT), both the accident rule and Part B missed a side-swipe: the tracker lost the car that spun and gave it a new id, and Part B treats side-by-side cars as normal lane-keeping, the filter that removed most false alarms on our camera.</div>
       <div class="p-3 bg-brutYellow/40 brut-border-2"><div class="font-mono font-black uppercase text-xs mb-1">Long merged segments</div>On C3896 one stopped_vehicle runs 153 s and one failure_to_yield 62 s, because overlapping events of one type merge into one segment. If the annotators split them, these will not match.</div>
       <div class="p-3 bg-brutPink/40 brut-border-2"><div class="font-mono font-black uppercase text-xs mb-1">Tracker id switches</div>In dense queues a stationary car can split into two tracks. <code>stopped_vehicle</code> re-joins gaps under 3 s, but a long occlusion by a bus still splits the event.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ LIVE DEMO ============================ -->
+<div id="page-demo" class="page-view space-y-8 hidden">
+  <div class="border-b-4 border-black pb-4">
+    <span class="font-mono text-xs font-black bg-brutCoral text-white px-2 py-1 brut-border uppercase">Interactive</span>
+    <h2 class="text-4xl font-black font-mono mt-2 uppercase">Live demo</h2>
+    <p class="text-gray-700 font-medium max-w-3xl">The planned demo accepts an MP4 from a fixed road camera and returns event segments, a risk curve, and annotated footage.
+      Upload processing is not enabled in this static preview. Browse the precomputed examples under Results.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div class="lg:col-span-7 space-y-4">
+      <label id="drop" class="drop block bg-white brut-border p-8 shadow-brut text-center cursor-pointer">
+        <input type="file" id="file" accept="video/mp4,video/*" class="hidden">
+        <span class="w-16 h-16 bg-brutLime brut-border rounded-full inline-flex items-center justify-center text-2xl mb-3"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+        <span class="block font-mono font-black text-lg uppercase">Drop a video here or click to choose</span>
+        <span class="block font-mono text-xs text-gray-600 mt-1">MP4 · fixed road camera</span>
+      </label>
+      <div class="bg-brutYellow/50 brut-border p-4 font-mono text-xs font-bold" role="status">
+        Uploads are not processed in this static deployment. Use Results to explore the precomputed video analyses.
+      </div>
+      <div id="job-error" class="hidden bg-brutCoral text-white brut-border p-4 font-mono text-sm font-bold" role="alert"></div>
+    </div>
+    <div class="lg:col-span-5 bg-white brut-border p-6 shadow-brut space-y-3">
+      <div class="flex items-center justify-between border-b-2 border-black pb-3">
+        <h3 class="font-mono font-black text-sm uppercase"><i class="fa-solid fa-terminal text-brutCoral"></i> Analysis output</h3>
+      </div>
+      <p class="text-sm font-medium text-gray-700">A processed video would show event detections, risk over time, road-user counts, and an annotated recording here.</p>
+      <button type="button" class="px-4 py-2 bg-brutYellow font-mono font-black text-xs uppercase brut-border opacity-60" disabled>
+        <i class="fa-solid fa-download"></i> Events + risk (JSON)
+      </button>
     </div>
   </div>
 </div>
